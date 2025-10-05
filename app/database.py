@@ -29,29 +29,30 @@ class DataService:
                 return await cur.fetchone() is not None
 
     async def get_player_info(self, discord_id: int) -> Optional[Dict[str, str]]:
-        """Возвращает информацию об игроке в виде словаря с полями pExp, pCYP, pBTV, pRP, pKMB, pBoss, pSkill"""
+        """Возвращает информацию об игроке в виде словаря с полями pName, pExp, pCYP, pBTV, pRP, pKMB, pBoss, pSkill"""
         async with self.pool.acquire() as conn:
             async with conn.cursor() as cur:
                 await cur.execute(
-                    "SELECT pExp, pCYP, pBTV, pRP, pKMB, pBoss, pSkill FROM players WHERE DiscID = %s",
+                    "SELECT pName, pExp, pCYP, pBTV, pRP, pKMB, pBoss, pSkill FROM players WHERE DiscID = %s",
                     (discord_id,)
                 )
                 row = await cur.fetchone()
                 if row:
                     return {
-                        "pExp": row[0],
-                        "pCYP": row[1],
-                        "pBTV": row[2],
-                        "pRP": row[3],
-                        "pKMB": row[4],
-                        "pBoss": row[5],
-                        "pSkill": row[6]
+                        "pName": row[0],
+                        "pExp": row[1],
+                        "pCYP": row[2],
+                        "pBTV": row[3],
+                        "pRP": row[4],
+                        "pKMB": row[5],
+                        "pBoss": row[6],
+                        "pSkill": row[7]
                     }
                 return None
 
     async def update_player_info(self, discord_id: int, field_name: str, value: str = '0', type: Optional[str] = None, item_id: int = -1) -> bool:
         """
-        Обновляет указанные поля для игрока. Поддерживаются только значения типа int.
+        Обновляет значение указанного поля для игрока. Возвращает pName игрока, если значение было изменено
         """
         player_info = await self.get_player_info(discord_id)
 

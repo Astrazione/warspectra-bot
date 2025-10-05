@@ -26,7 +26,8 @@ async def on_message(msg: Message):
             return
         
         user_id = msg.author.id
-        reply_text = await service.process_message(user_id, msg.content)
+        username = msg.author.name
+        reply_text = await service.process_message(user_id, username, msg.content)
         if reply_text:
             await msg.channel.send(reply_text)
 
