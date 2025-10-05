@@ -100,7 +100,7 @@ class ChatProcessor():
                 if selected_field.range:
                     return f"Введите значение от {selected_field.range.min} до {selected_field.range.max}"
                 else:
-                    return "Введите значение добавляемое значение (число):"
+                    return "Введите значение добавляемое (число):"
         
         return items_reply
 
@@ -156,8 +156,8 @@ class ChatProcessor():
             value = str(int(value) - 1)
 
         await database.data_service.update_player_info(target_discord_id, field_name=field.key, value=value, type=field.type, item_id=item_id)
-        result_str: str = f'{'установлено' if field.items or field.type else 'добавлено'}  значение {value} пользователю {target_username} ({target_discord_id}) для поля {field.name}({field.key}){f": {item.name}" if item else ""}'
-        logging.info(f'{'[!!!]' if operator_id == target_discord_id else ''} Оператором {cached_data.operator_username} ({operator_id}) {result_str}')
+        result_str: str = f'{"установлено" if field.items or field.type else "добавлено"} значение {value} пользователю {target_username} ({target_discord_id}) для поля {field.name}({field.key}){f": {item.name}" if item else ""}'
+        logging.info(f'{"[!!!] " if operator_id == target_discord_id else ""}Оператором {cached_data.operator_username} ({operator_id}) {result_str}')
 
         del self.cache[operator_id]
         return result_str[0].upper() + result_str[1:]

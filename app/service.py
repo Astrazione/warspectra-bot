@@ -8,4 +8,4 @@ async def process_message(user_id: int, username: str, message_content: str) -> 
     if not await autorize_operator(user_id):
         return str()
 
-    return await chat_processor.process_message(user_id, message_content, username)
+    return await chat_processor.process_message(user_id, username, message_content)
