@@ -48,6 +48,7 @@ fields:
 
   pExp:
     name: "Опыт"
+    range: [-10000, 10000]
 
   pKarma:
     type: "fixed"
