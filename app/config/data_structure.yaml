@@ -64,3 +64,11 @@ fields:
   pUnits:
     type: "fixed"
     name: "Отряд"
+
+  pAdmin:
+    name: "Админ"
+    items:
+      - name: ""
+      - name: "Военная полиция"
+      - name: ""
+      - name: ""

@@ -29,14 +29,15 @@ class DataService:
                 return await cur.fetchone() is not None
 
     async def get_player_info(self, discord_id: int) -> Optional[Dict[str, str]]:
-        """Возвращает информацию об игроке в виде словаря с полями pName, pExp, pCYP, pBTV, pRP, pKMB, pBoss, pSkill"""
+        """Возвращает информацию об игроке в виде словаря с полями pName, pExp, pCYP, pBTV, pRP, pKMB, pBoss, pSkill, pAdmin"""
         async with self.pool.acquire() as conn:
             async with conn.cursor() as cur:
                 await cur.execute(
-                    "SELECT pName, pExp, pCYP, pBTV, pRP, pKMB, pBoss, pSkill FROM players WHERE DiscID = %s",
+                    "SELECT pName, pExp, pCYP, pBTV, pRP, pKMB, pBoss, pSkill, pAdmin FROM players WHERE DiscID = %s",
                     (discord_id,)
                 )
                 row = await cur.fetchone()
+
                 if row:
                     return {
                         "pName": row[0],
@@ -46,7 +47,8 @@ class DataService:
                         "pRP": row[4],
                         "pKMB": row[5],
                         "pBoss": row[6],
-                        "pSkill": row[7]
+                        "pSkill": row[7],
+                        "pAdmin": row[8]
                     }
                 return None
 

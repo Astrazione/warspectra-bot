@@ -1,4 +1,5 @@
 import logging
+from typing import Optional
 from models.chat_cache import ChatCache
 from models.chat_state import ChatState
 from models.data_structure import Field
@@ -13,7 +14,7 @@ class ChatProcessor():
 
     @staticmethod
     def is_discord_id(message: str) -> bool:
-        return message.isdigit() and 10 <= len(message) <= 22
+        return message.isdigit() and 10 <= len(message) <= 22 # допустимое кол-во символов в Discord ID
 
     async def process_message(self, operator_id: int, operator_username: str, message: str) -> str:
         """
@@ -116,7 +117,7 @@ class ChatProcessor():
         items = selected_field.items
         item_index = int(message) - 1
 
-        if item_index >= len(items) or item_index < 0:
+        if item_index >= len(items) or item_index < 0 or not items[item_index].name:
             return "Пожалуйста, введите корректный индекс"
 
         selected_item = items[item_index]
@@ -169,9 +170,9 @@ class ChatProcessor():
         return f"Выберите поле по индексу:\n{fields_enumeration_reply}"
     
     @staticmethod
-    def get_items_reply(field: Field):
+    def get_items_reply(field: Field) -> Optional[str]:
         items = field.items
         if not items:
             return None
-        fields_enumeration_reply = "\n".join([f"{index}. {item.name}" for index, item in enumerate(items)])
+        fields_enumeration_reply = "\n".join([f"{index}. {item.name}" for index, item in enumerate(items) if item.name])
         return f"Выберите поле по индексу:\n{fields_enumeration_reply}"
