@@ -1,9 +1,9 @@
 import logging
-import re
-from typing import Dict, List, Optional
+from typing import Optional
+from app.utils.allowances_formatter import AllowancesFormatter
 from models.chat_cache import ChatCache
 from models.chat_state import ChatState
-from models.data_structure import Field, Item
+from models.data_structure import Field
 from models.user_cache import UserCache
 from config.settings import settings
 import database
@@ -144,10 +144,15 @@ class ChatProcessor():
         
         if not field or not target_discord_id:
             return "Произошла неизвестная ошибка. Пожалуйста, начните заново."
-        
+
         if not field.type or field.type != 'string':
             try:
                 value_number = int(value)
+
+                if field.key == "pUnits":
+                    punits_error = self.validate_punits_field(value_number)
+                    if punits_error:
+                        return punits_error
 
                 if field.range and (value_number < field.range.min or value_number > field.range.max):
                     return f"Некорректный ввод. Пожалуйста, введите число в диапазоне от {field.range.min} до {field.range.max}"
@@ -168,6 +173,12 @@ class ChatProcessor():
 
         del self.cache[operator_id]
         return result_str[0].upper() + result_str[1:]
+
+    @staticmethod
+    def validate_punits_field(value: int):
+        if value != 0 and (value < 100_000 or value > 999_999):
+            return "Недопустимое значение для отряда. Используйте 0 для сброса или шестизначное число для указания отряда"
+
 
     @staticmethod
     def get_fields_reply() -> str:
@@ -205,24 +216,4 @@ class ChatProcessor():
         if not player_info:
             return ""
 
-        return f"Ник: {player_info["pName"]}\nЗвание: {settings.player_ranks.ranks[int(player_info["pLvl"])]}\nОпыт: {player_info["pExp"]}\n{self.get_allowances_str(player_info)}"
-    
-    @staticmethod
-    def get_allowances_str(player_info: Dict[str, str]):
-        displayed_allowances = ["pCYP", "pBTV", "pRP", "pKMB", "pBoss", "pSkill", "pAdmin"]
-        return "\n".join([ChatProcessor.get_allowance_type_str(allowance_type, player_info) for allowance_type in displayed_allowances])
-        
-    @staticmethod
-    def get_allowance_type_str(allowance_type: str, player_info: Dict[str, str]) -> str:
-        allowance_field: Field
-
-        for field in settings.data_structure.fields:
-            if field.key == allowance_type:
-                allowance_field = field
-                break
-        
-        allowances_arr = player_info[allowance_type]
-        allowances = re.sub(r"[\[\] ]", '', allowances_arr).split(',')
-        allowance_names = ", ".join([allowance_field.items[allowance_index] for allowance_index in range(len(allowances)) if allowances[allowance_index] == "1"]) # type: ignore
-
-        return f"{allowance_field.name}({allowance_type}): {allowance_names}" # type: ignore
+        return f"Ник: {player_info["pName"]}\nЗвание: {settings.player_ranks.ranks[int(player_info["pLvl"])]}\nОпыт: {player_info["pExp"]}\n{AllowancesFormatter.get_allowances_str(player_info)}"
