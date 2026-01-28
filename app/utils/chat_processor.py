@@ -1,8 +1,9 @@
 import logging
-from typing import Optional
+import re
+from typing import Dict, List, Optional
 from models.chat_cache import ChatCache
 from models.chat_state import ChatState
-from models.data_structure import Field
+from models.data_structure import Field, Item
 from models.user_cache import UserCache
 from config.settings import settings
 import database
@@ -35,7 +36,7 @@ class ChatProcessor():
                     return "Пожалуйста, введите корректный Discord Id"
                 
             case ChatState.AWAIT_FIELDNAME:
-                return self.process_fieldname(message, operator_id)
+                return await self.process_fieldname(message, operator_id)
 
             case ChatState.AWAIT_OPTION:
                 return self.process_option(message, operator_id)
@@ -78,7 +79,7 @@ class ChatProcessor():
         self.cache[operator_id] = UserCache(operator_username, target_user_id=discord_id, target_username=player_name)
         return ChatProcessor.get_fields_reply()
 
-    def process_fieldname(self, message: str, operator_id: int) -> str:
+    async def process_fieldname(self, message: str, operator_id: int) -> str:
         if not message.isdigit():
             return "Пожалуйста, введите число"
         
@@ -91,6 +92,11 @@ class ChatProcessor():
         selected_field = fields[field_index]
         self.cache[operator_id].field = selected_field
         self.cache[operator_id].chat_state = ChatState.AWAIT_OPTION
+        
+        options_result = await self.process_custom_options(operator_id, selected_field.type or "")
+        if options_result:
+            return options_result
+
         items_reply = ChatProcessor.get_items_reply(selected_field)
 
         if not items_reply:
@@ -176,3 +182,47 @@ class ChatProcessor():
             return None
         fields_enumeration_reply = "\n".join([f"{index}. {item.name}" for index, item in enumerate(items) if item.name])
         return f"Выберите поле по индексу:\n{fields_enumeration_reply}"
+
+    async def process_custom_options(self, operator_id: int, field_type: str) -> Optional[str]:
+        if field_type == "player_info":
+            return await self.get_player_info_str(operator_id)
+        
+        return None
+
+    async def get_player_info_str(self, operator_id: int) -> str:
+        target_id = self.cache[operator_id].target_discord_id
+
+        if not target_id:
+            return ""
+
+        if database.data_service is None:
+            connection_error_str = "Отсутствует подключение к базе данных"
+            logging.error(connection_error_str)
+            return connection_error_str
+
+        player_info = await database.data_service.get_player_info(target_id)
+
+        if not player_info:
+            return ""
+
+        return f"Ник: {player_info["pName"]}\nЗвание: {settings.player_ranks.ranks[int(player_info["pLvl"])]}\nОпыт: {player_info["pExp"]}\n{self.get_allowances_str(player_info)}"
+    
+    @staticmethod
+    def get_allowances_str(player_info: Dict[str, str]):
+        displayed_allowances = ["pCYP", "pBTV", "pRP", "pKMB", "pBoss", "pSkill", "pAdmin"]
+        return "\n".join([ChatProcessor.get_allowance_type_str(allowance_type, player_info) for allowance_type in displayed_allowances])
+        
+    @staticmethod
+    def get_allowance_type_str(allowance_type: str, player_info: Dict[str, str]) -> str:
+        allowance_field: Field
+
+        for field in settings.data_structure.fields:
+            if field.key == allowance_type:
+                allowance_field = field
+                break
+        
+        allowances_arr = player_info[allowance_type]
+        allowances = re.sub(r"[\[\] ]", '', allowances_arr).split(',')
+        allowance_names = ", ".join([allowance_field.items[allowance_index] for allowance_index in range(len(allowances)) if allowances[allowance_index] == "1"]) # type: ignore
+
+        return f"{allowance_field.name}({allowance_type}): {allowance_names}" # type: ignore

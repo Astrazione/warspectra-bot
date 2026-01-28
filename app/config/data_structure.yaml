@@ -23,7 +23,6 @@ fields:
       - name: "Стрингеры"
       - name: "Красный крест"
       - name: "НАТО"
-      # - name: "Легионер"
 
   pKMB:
     name: "Инструкторский состав"
@@ -73,5 +72,8 @@ fields:
     items:
       - name: ""
       - name: "Военная полиция"
-      - name: ""
-      - name: ""
+
+  playerInfo:
+    type: "player_info"
+    name: "Информация об игроке"
+    

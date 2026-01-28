@@ -2,6 +2,7 @@ import logging
 import os
 from typing import Optional
 
+from app.models.player_ranks import PlayerRanks
 from models.data_structure import DataStructure
 from utils.yaml_config_parser import YamlConfigParser
 
@@ -14,6 +15,7 @@ class Settings:
         self.db_name = self.get_env_variable('DB_NAME', 'warspectra')
         self.data_structure: DataStructure = YamlConfigParser.parse('./app/config/data_structure.yaml')
         self.discord_bot_token = self.get_env_variable('DISCORD_BOT_TOKEN')
+        self.player_ranks = PlayerRanks()
 
     @staticmethod
     def get_env_variable(var_name: str, default: Optional[str] = None) -> str:
