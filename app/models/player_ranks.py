@@ -2,11 +2,33 @@ from typing import List
 
 
 class PlayerRanks:
-    ranks: List[str]
+	ranks: List[str]
 
-    def __init__(self):
-      self.ranks = self.get_ranks()
-
-    @staticmethod
-    def get_ranks() -> List[str]:
-       return ["Сержант", "Полковник"]
+	def __init__(self):
+		self.ranks = self.get_ranks()
+	  
+	@staticmethod
+	def get_ranks() -> List[str]:
+		return [
+			"дух",
+			"рядовой",				# 1
+			"ефрейтор",				# 2
+			"мл. сержант",			# 3
+			"сержант",			 	# 4
+			"ст. сержант",		 	# 5
+			"старшина",			 	# 6
+			"прапорщик",			# 7
+			"ст. прапорщик",		# 8
+			"мл. лейтенант",		# 9
+			"лейтенант",			# 10
+			"ст. лейтенант",		# 11
+			"капитан",			 	# 12
+			"майор",				# 13
+			"подполковник",			# 14
+			"полковник",			# 15
+			"генерал-майор",		# 16
+			"генерал-лейтенант",	# 17
+			"генерал-полковник",	# 18
+			"генерал армии",		# 19
+			"маршал ВС РФ"			# 20
+		]

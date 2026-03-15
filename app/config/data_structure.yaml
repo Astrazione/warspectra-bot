@@ -19,7 +19,7 @@ fields:
     name: "РП стороны"
     items:
       - name: "Зевс"
-      - name: "Легионер (повстанец)"
+      - name: "Повстанец"
       - name: "Стрингеры"
       - name: "Красный крест"
       - name: "НАТО"
@@ -69,7 +69,7 @@ fields:
     name: "Отряд"
 
   pAdmin:
-    name: "Админ"
+    name: "ВП"
     items:
       - name: ""
       - name: "Военная полиция"

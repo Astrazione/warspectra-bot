@@ -1,6 +1,6 @@
 import logging
 from typing import Optional
-from app.utils.allowances_formatter import AllowancesFormatter
+from utils.allowances_formatter import AllowancesFormatter
 from models.chat_cache import ChatCache
 from models.chat_state import ChatState
 from models.data_structure import Field
@@ -95,6 +95,7 @@ class ChatProcessor():
         
         options_result = await self.process_custom_options(operator_id, selected_field.type or "")
         if options_result:
+            del self.cache[operator_id]
             return options_result
 
         items_reply = ChatProcessor.get_items_reply(selected_field)
@@ -168,7 +169,7 @@ class ChatProcessor():
             value = str(int(value) - 1)
 
         await database.data_service.update_player_info(target_discord_id, field_name=field.key, value=value, type=field.type, item_id=item_id)
-        result_str: str = f'{"установлено" if field.items or field.type else "добавлено"} значение {value} пользователю {target_username} ({target_discord_id}) для поля {field.name}({field.key}){f": {item.name}" if item else ""}'
+        result_str = f'{"установлено" if field.items or field.type else "добавлено"} значение {value} пользователю {target_username} ({target_discord_id}) для поля {field.name}({field.key}){f": {item.name}" if item else ""}'
         logging.info(f'{"[!!!] " if operator_id == target_discord_id else ""}Оператором {cached_data.operator_username} ({operator_id}) {result_str}')
 
         del self.cache[operator_id]
@@ -183,7 +184,7 @@ class ChatProcessor():
     @staticmethod
     def get_fields_reply() -> str:
         fields = settings.data_structure.fields
-        fields_enumeration_reply = "\n".join([f"{index}. {field.name} ({field.key})" for index, field in enumerate(fields)])
+        fields_enumeration_reply = "\n".join([f"{index + 1}. {field.name} ({field.key})" for index, field in enumerate(fields)])
         return f"Выберите поле по индексу:\n{fields_enumeration_reply}"
     
     @staticmethod
@@ -191,7 +192,7 @@ class ChatProcessor():
         items = field.items
         if not items:
             return None
-        fields_enumeration_reply = "\n".join([f"{index}. {item.name}" for index, item in enumerate(items) if item.name])
+        fields_enumeration_reply = "\n".join([f"{index + 1}. {item.name}" for index, item in enumerate(items) if item.name])
         return f"Выберите поле по индексу:\n{fields_enumeration_reply}"
 
     async def process_custom_options(self, operator_id: int, field_type: str) -> Optional[str]:
@@ -216,4 +217,4 @@ class ChatProcessor():
         if not player_info:
             return ""
 
-        return f"Ник: {player_info["pName"]}\nЗвание: {settings.player_ranks.ranks[int(player_info["pLvl"])]}\nОпыт: {player_info["pExp"]}\n{AllowancesFormatter.get_allowances_str(player_info)}"
+        return f"Ник: {player_info['pName']}\nЗвание: {settings.player_ranks.ranks[int(player_info['pLvl'])]}\nОпыт: {player_info['pExp']}\n{AllowancesFormatter.get_allowances_str(player_info)}"

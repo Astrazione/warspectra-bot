@@ -2,7 +2,7 @@ import logging
 import os
 from typing import Optional
 
-from app.models.player_ranks import PlayerRanks
+from models.player_ranks import PlayerRanks
 from models.data_structure import DataStructure
 from utils.yaml_config_parser import YamlConfigParser
 
