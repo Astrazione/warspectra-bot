@@ -1,14 +1,16 @@
 from dataclasses import dataclass
 from typing import List, Optional
 
-@dataclass
-class Item:
-    name: str
 
 @dataclass
 class Range:
     min: int
     max: int
+
+@dataclass
+class Item:
+    name: str
+    range: Optional[Range]
 
 @dataclass
 class Field:

@@ -26,7 +26,22 @@ class YamlConfigParser:
             range: Optional[Range] = None
 
             if 'items' in field_data:
-                items = [Item(name=item['name']) for item in field_data['items']]
+                items = list[Item]()
+
+                for item_data in field_data['items']:
+                    item_range: Optional[Range] = None
+
+                    if 'range' in item_data:
+                        if len(item_data['range']) != 2:
+                            raise ValueError(f'Диапазон для опции {item_data['name']} поля {field_key} указан неверно')
+                        
+                        item_range = Range(item_data['range'][0], item_data['range'][1])
+
+                    item = Item(
+                        name=item_data['name'],
+                        range=item_range
+                    )
+                    items.append(item)
 
             if 'range' in field_data:
                 if len(field_data['range']) != 2:
@@ -44,3 +59,4 @@ class YamlConfigParser:
             fields_list.append(field)
         
         return DataStructure(fields=fields_list)
+    

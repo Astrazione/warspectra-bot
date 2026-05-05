@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 from discord import Message
+from utils.yaml_config_parser import YamlConfigParser
 from config.settings import settings
 import service
 import database

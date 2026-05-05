@@ -3,7 +3,7 @@ from typing import Optional
 from utils.allowances_formatter import AllowancesFormatter
 from models.chat_cache import ChatCache
 from models.chat_state import ChatState
-from models.data_structure import Field
+from models.data_structure import Field, Item
 from models.user_cache import UserCache
 from config.settings import settings
 import database
@@ -60,6 +60,9 @@ class ChatProcessor():
         return "Здравствуйте! Для начала работы ведите Discord ID игрока"
                   
     async def process_discord_id(self, message: str, operator_id: int, operator_username: str) -> str:
+        """
+        Обработка Discord Id целевого пользователя
+        """
         discord_id = int(message)
         player_name: str
 
@@ -80,6 +83,9 @@ class ChatProcessor():
         return ChatProcessor.get_fields_reply()
 
     async def process_fieldname(self, message: str, operator_id: int) -> str:
+        """
+        Обработка поля в конвейере обработки сообщения
+        """
         if not message.isdigit():
             return "Пожалуйста, введите число"
         
@@ -113,6 +119,9 @@ class ChatProcessor():
         return items_reply
 
     def process_option(self, message: str, operator_id: int):
+        """
+        Обработка опции поля в конвейере обработки сообщения
+        """
         if not message.isdigit():
             return "Пожалуйста, введите индекс элемента"
         
@@ -133,6 +142,9 @@ class ChatProcessor():
         return f"Теперь выберите значение: \n1. Нет\n2. Есть"
 
     async def process_value(self, message: str, operator_id: int) -> str:
+        """
+        Обработка значения в конвейере обработки сообщения
+        """
         if database.data_service is None:
             return "Отсутствует подключение к базе данных."
         
@@ -155,17 +167,19 @@ class ChatProcessor():
                     if punits_error:
                         return punits_error
 
-                if field.range and (value_number < field.range.min or value_number > field.range.max):
-                    return f"Некорректный ввод. Пожалуйста, введите число в диапазоне от {field.range.min} до {field.range.max}"
+                range_error = self.validate_range(field, item, value_number)
+                if range_error:
+                    return range_error
+
             except:
                 raise ValueError(f"Пожалуйста, введите {'индекс' if field.items else 'число'}")
 
-            if field.items and (value_number < 1 or value_number > 2):
+            if field.items and item and not item.range and (value_number < 1 or value_number > 2):
                 return f'Пожалуйста, введите корректный индекс' 
 
         item_id = field.items.index(item) if field.items and item else -1
 
-        if item_id != -1:
+        if item_id != -1 and item and not item.range:
             value = str(int(value) - 1)
 
         await database.data_service.update_player_info(target_discord_id, field_name=field.key, value=value, type=field.type, item_id=item_id)
@@ -180,6 +194,14 @@ class ChatProcessor():
         if value != 0 and (value < 100_000 or value > 999_999):
             return "Недопустимое значение для отряда. Используйте 0 для сброса или шестизначное число для указания отряда"
 
+    @staticmethod
+    def validate_range(field: Field, item: Optional[Item], value: int) -> str:
+        error_template = "Некорректный ввод. Пожалуйста, введите число в диапазоне от {} до {}"
+        if field.range and (value < field.range.min or value > field.range.max):
+            return error_template.format(field.range.min, field.range.max)
+        if item and item.range and (value < item.range.min or value > item.range.max):
+            return error_template.format(item.range.min, item.range.max)
+        return ""
 
     @staticmethod
     def get_fields_reply() -> str:

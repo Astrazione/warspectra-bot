@@ -69,10 +69,13 @@ fields:
     name: "Отряд"
 
   pAdmin:
-    name: "ВП"
+    name: "ВП и буст опыта"
     items:
       - name: ""
       - name: "Военная полиция"
+      - name: ""
+      - name: "Буст опыта"
+        range: [0, 50]
 
   playerInfo:
     type: "player_info"
